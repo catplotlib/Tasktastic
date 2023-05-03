@@ -391,9 +391,9 @@ const Todos = () => {
             boxShadow="md"
             p={4}
             w="100%"
-            h="100%"
-            minH={{ base: "100%", md: "150px" }}
-            minW={{ base: "120%", md: "150px" }}
+            h="auto"
+            minH={{ base: "auto", md: "150px" }}
+            minW={{ base: "auto", md: "150px" }}
             _hover={{ transform: "scale(1.05)" }}
             transition="all 0.3s ease-in-out"
             cursor="pointer"
