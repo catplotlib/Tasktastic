@@ -2,7 +2,8 @@
 Tasktastic is a simple, yet powerful task management app that helps you stay organized and productive. With a clean and intuitive interface, Tasktastic allows you to easily create, manage, and filter tasks based on their status (To-do, Doing, and Done). Stay on top of your tasks, keep track of deadlines, and prioritize your work with Tasktastic.
 
 ## Demo
-[my link]('../src/assets/demo.mov')
+
+https://user-images.githubusercontent.com/61319491/236069714-2c845333-1846-4541-a973-9d27df512df2.mov
 
 ## Features
 - Create tasks with titles, descriptions, and due dates.
