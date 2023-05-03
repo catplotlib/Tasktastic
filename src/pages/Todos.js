@@ -211,7 +211,7 @@ const Todos = () => {
               sm: "repeat(2, 1fr)",
               md: "repeat(3, 1fr)",
             }}
-            minH={{md:'',base:'50vh'}}
+            minH={{ md: "", base: "50vh" }}
             gap={6}
           >
             <AnimatePresence>
@@ -380,9 +380,9 @@ const Todos = () => {
 
         <Grid
           templateColumns={{ base: "repeat(4, 1fr)", md: "repeat(2, 1fr)" }}
-          gap={{ base: 4, md: 2 }}
+          gap={{ base: 1, md: 2 }}
           mt={{ base: 4, md: 8 }}
-          w="80%"
+          w={{base:"100%",md:"80%"}}
         >
           <Box
             bg="rgba(255, 255, 255, 0.1)"
@@ -390,9 +390,11 @@ const Todos = () => {
             borderRadius="xl"
             boxShadow="md"
             p={4}
-           
-            minH={{ base: "30px", md: "150px" }}
-            minW={{ base: "auto", md: "150px" }}
+            h={{ base: "80px", md: "150px" }}
+            w={{ base: "80px", md: "150px" }}
+
+            // minH={{ base: "30px", md: "150px" }}
+            // minW={{ base: "80px", md: "150px" }}
             _hover={{ transform: "scale(1.05)" }}
             transition="all 0.3s ease-in-out"
             cursor="pointer"
@@ -434,10 +436,9 @@ const Todos = () => {
             borderRadius="xl"
             boxShadow="md"
             p={4}
-            w="100%"
-            h="100%"
-            minH={{ base: "100%", md: "150px" }}
-            minW={{ base: "120%", md: "150px" }}
+          
+            h={{ base: "80px", md: "150px" }}
+            w={{ base: "80px", md: "150px" }}
             _hover={{ transform: "scale(1.05)" }}
             transition="all 0.3s ease-in-out"
             cursor="pointer"
@@ -478,10 +479,9 @@ const Todos = () => {
             borderRadius="xl"
             boxShadow="md"
             p={4}
-            w="100%"
-            h="100%"
-            minH={{ base: "100%", md: "150px" }}
-            minW={{ base: "120%", md: "150px" }}
+        
+            h={{ base: "80px", md: "150px" }}
+            w={{ base: "80px", md: "150px" }}
             _hover={{ transform: "scale(1.05)" }}
             transition="all 0.3s ease-in-out"
             cursor="pointer"
@@ -522,10 +522,8 @@ const Todos = () => {
             borderRadius="xl"
             boxShadow="md"
             p={4}
-            w="100%"
-            h="100%"
-            minH={{ base: "100%", md: "150px" }}
-            minW={{ base: "120%", md: "150px" }}
+            h={{ base: "80px", md: "150px" }}
+            w={{ base: "80px", md: "150px" }}
             _hover={{ transform: "scale(1.05)" }}
             transition="all 0.3s ease-in-out"
             cursor="pointer"
