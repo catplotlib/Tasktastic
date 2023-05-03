@@ -1,24 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Home from "./pages/Home";
 
+import Dashboard from "./pages/Dashboard";
+
+import Navigation from "./components/Navigation";
+import Todos from "./pages/Todos";
+import { Box } from "@chakra-ui/react";
+import { userAtom } from "./Atoms";
+import { useAtom } from "jotai";
 function App() {
+  const [user, setUser] = useAtom(userAtom);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Box pos="relative" minHeight="100vh">
+        {user && <Navigation />}
+        <Box>
+          <Routes>
+            <Route path="/" exact element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/todos" element={<Todos />} />
+          </Routes>
+        </Box>
+      </Box>
+    </Router>
   );
 }
 

@@ -36,3 +36,12 @@
     transform: rotate(360deg);
   }
 }
+
+.custom-date-input::-webkit-calendar-picker-indicator {
+  filter: grayscale(1) sepia(1) hue-rotate(200deg) saturate(5);
+}
+
+/* background color of entire app */  
+body {
+  background-color: #EACBBC;
+}
