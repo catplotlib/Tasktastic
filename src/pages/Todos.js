@@ -56,7 +56,7 @@ const Todos = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/tasks")
+      .get("https://tasktastic.pythonanywhere.com/api/tasks")
       .then((res) => {
         const userTasks = res.data.filter((task) => {
           console.log(task.user);
@@ -124,7 +124,7 @@ const Todos = () => {
 
   const handleSave = () => {
     console.log(newTask);
-    fetch("http://localhost:8000/api/tasks/", {
+    fetch("https://tasktastic.pythonanywhere.com/api/tasks/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -167,7 +167,7 @@ const Todos = () => {
     setIsEditModalOpen(true);
   };
   const handleUpdate = () => {
-    fetch(`http://localhost:8000/api/tasks/${selectedTask.id}/`, {
+    fetch(`https://tasktastic.pythonanywhere.com/api/tasks/${selectedTask.id}/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -359,7 +359,7 @@ const Todos = () => {
                               };
 
                               fetch(
-                                `http://localhost:8000/api/tasks/${task.id}/`,
+                                `https://tasktastic.pythonanywhere.com/api/tasks/${task.id}/`,
                                 {
                                   method: "PUT",
                                   headers: {

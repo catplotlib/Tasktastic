@@ -25,7 +25,7 @@ import { useNavigate } from "react-router-dom";
 // import { onAuthStateChanged } from "firebase/auth";
 // import { browserLocalPersistence, setPersistence } from "firebase/auth";
 import { useGoogleLogin } from "@react-oauth/google";
-import axios from "axios";
+
 const Home = () => {
   const [user, setUser] = useAtom(userAtom);
   const [email, setEmail] = useAtom(emailAtom);
@@ -38,21 +38,6 @@ const Home = () => {
   const login = useGoogleLogin({
     onSuccess: (tokenResponse) => {
       setEmail(tokenResponse.access_token);
-      // axios
-      //   .get("https://www.googleapis.com/oauth2/v3/userinfo", {
-      //     headers: {
-      //       Authorization: `Bearer ${tokenResponse.access_token}`,
-      //     },
-      //   })
-      //   .then((response) => {
-      //     console.log(response.data.email);
-      //     setUserName(response.data.given_name);
-      //     // setEmail(response.data.email);
-      //     setPic(response.data.picture);
-      //   })
-      //   .catch((error) => {
-      //     console.error(error);
-      //   });
       navigate("/todos");
       setLogin(true);
     },
@@ -64,29 +49,7 @@ const Home = () => {
     config: { duration: 1000 },
   });
 
-  // useEffect(() => {
-  //   const unsubscribe = onAuthStateChanged(auth, (user) => {
-  //     if (user) {
-  //       console.log(user);
-  //       // User is signed in.
-  //       setUserName(user.displayName);
-  //       setEmail(user.email);
-  //       setPic(user.photoURL);
-  //     } else {
-  //       // User is signed out.
-  //       setUserName(null);
-  //       setEmail(null);
-  //       setPic("");
-  //     }
-  //   });
 
-  // Cleanup the listener when the component is unmounted.
-  //   return () => {
-  //     unsubscribe();
-  //   };
-  // }, []);
-
-  // console.log(userName);
   return (
     <Flex
       h={{ base: "100vh", md: "100vh" }}
