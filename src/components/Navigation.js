@@ -10,23 +10,23 @@ import {
   Image,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { getAuth, signOut } from "firebase/auth";
 import Tasktastic from "../assets/Tasktastic.png";
 import { useAtom } from "jotai";
-import { userAtom } from "../Atoms";
+import { userAtom,loginAtom } from "../Atoms";
+import { googleLogout } from "@react-oauth/google";
 
 const Navigation = () => {
   const [user, setUser] = useAtom(userAtom);
+  const [loginn, setLogin] = useAtom(loginAtom);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    const authInstance = getAuth();
     try {
-      await signOut(authInstance);
-      setUser(null);
+      googleLogout();
+      setLogin(false);
       navigate("/");
     } catch (error) {
-      console.log("Error signing out:", error);
+      console.log("Logout Failed", error);
     }
   };
 
@@ -58,7 +58,7 @@ const Navigation = () => {
           // as={NavLink}
           // to="/"
           colorScheme="whiteAlpha"
-          size={{md:"md",base:"xs"}}
+          size={{ md: "md", base: "xs" }}
           border="1px solid #1F324E"
           onClick={handleLogout}
           color={"#1F324E"}

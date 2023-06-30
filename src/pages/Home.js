@@ -9,30 +9,54 @@ import {
   Image,
   Center,
 } from "@chakra-ui/react";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 import { useSpring, animated } from "react-spring";
-import { auth, googleAuthProvider } from "../firebase/firebaseConfig";
-import { signInWithPopup } from "firebase/auth";
+// import { auth, googleAuthProvider } from "../firebase/firebaseConfig";
+// import { signInWithPopup } from "firebase/auth";
 import { useAtom } from "jotai";
-import { userAtom, userNameAtom } from "../Atoms";
+import {
+  userAtom,
+  userNameAtom,
+  emailAtom,
+  picAtom,
+  loginAtom,
+} from "../Atoms";
 import { useNavigate } from "react-router-dom";
-import { onAuthStateChanged } from "firebase/auth";
-import { browserLocalPersistence, setPersistence } from "firebase/auth";
-
+// import { onAuthStateChanged } from "firebase/auth";
+// import { browserLocalPersistence, setPersistence } from "firebase/auth";
+import { useGoogleLogin } from "@react-oauth/google";
+import axios from "axios";
 const Home = () => {
   const [user, setUser] = useAtom(userAtom);
+  const [email, setEmail] = useAtom(emailAtom);
+  const [pic, setPic] = useAtom(picAtom);
+  const [userName, setUserName] = useAtom(userNameAtom);
+  const [loginn, setLogin] = useAtom(loginAtom);
+
   const navigate = useNavigate();
 
-  const handleGoogleSignIn = async () => {
-    try {
-      await setPersistence(auth, browserLocalPersistence); // Set the persistence
-      const result = await signInWithPopup(auth, googleAuthProvider);
-      setUser(result.user);
+  const login = useGoogleLogin({
+    onSuccess: (tokenResponse) => {
+      setEmail(tokenResponse.access_token);
+      // axios
+      //   .get("https://www.googleapis.com/oauth2/v3/userinfo", {
+      //     headers: {
+      //       Authorization: `Bearer ${tokenResponse.access_token}`,
+      //     },
+      //   })
+      //   .then((response) => {
+      //     console.log(response.data.email);
+      //     setUserName(response.data.given_name);
+      //     // setEmail(response.data.email);
+      //     setPic(response.data.picture);
+      //   })
+      //   .catch((error) => {
+      //     console.error(error);
+      //   });
       navigate("/todos");
-    } catch (error) {
-      console.error("Error signing in with Google", error);
-    }
-  };
+      setLogin(true);
+    },
+  });
 
   const fadeIn = useSpring({
     opacity: 1,
@@ -40,26 +64,29 @@ const Home = () => {
     config: { duration: 1000 },
   });
 
-  const [userName, setUserName] = useAtom(userNameAtom);
+  // useEffect(() => {
+  //   const unsubscribe = onAuthStateChanged(auth, (user) => {
+  //     if (user) {
+  //       console.log(user);
+  //       // User is signed in.
+  //       setUserName(user.displayName);
+  //       setEmail(user.email);
+  //       setPic(user.photoURL);
+  //     } else {
+  //       // User is signed out.
+  //       setUserName(null);
+  //       setEmail(null);
+  //       setPic("");
+  //     }
+  //   });
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // User is signed in.
-        setUserName(user.displayName);
-      } else {
-        // User is signed out.
-        setUserName(null);
-      }
-    });
+  // Cleanup the listener when the component is unmounted.
+  //   return () => {
+  //     unsubscribe();
+  //   };
+  // }, []);
 
-    // Cleanup the listener when the component is unmounted.
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
-  console.log(userName);
+  // console.log(userName);
   return (
     <Flex
       h={{ base: "100vh", md: "100vh" }}
@@ -107,7 +134,7 @@ const Home = () => {
             </Text>
             <Center>
               <Button
-                onClick={handleGoogleSignIn} // Add this onClick handler here
+                onClick={() => login()}
                 colorScheme="whiteAlpha"
                 size="lg"
                 border="2px solid #1F324E"

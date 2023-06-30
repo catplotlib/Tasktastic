@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   VStack,
@@ -28,22 +28,21 @@ import {
   Radio,
   RadioGroup,
   Textarea,
+  Image,
 } from "@chakra-ui/react";
 import { ChevronLeftIcon, ChevronRightIcon, AddIcon } from "@chakra-ui/icons";
 import moment from "moment";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAtom } from "jotai";
-import { userNameAtom } from "../Atoms";
+import { userNameAtom, emailAtom, picAtom } from "../Atoms";
+import axios from "axios";
 
 const Todos = () => {
   const [userName, setUserName] = useAtom(userNameAtom);
-
+  const [email, setEmail] = useAtom(emailAtom);
+  const [pic, setPic] = useAtom(picAtom);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [user, setUser] = useState({
-    name: userName,
-    email: "johndoe@example.com",
-  });
   const [tasks, setTasks] = useState([
     // {
     //   id: "1",
@@ -55,11 +54,24 @@ const Todos = () => {
     // },
   ]);
 
+  useEffect(() => {
+    axios
+      .get("http://localhost:8000/api/tasks")
+      .then((res) => {
+        const userTasks = res.data.filter((task) => {
+          console.log(task.user);
+          return task.user === email;
+        });
+        setTasks(userTasks);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
   const [isOpen, setIsOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("todo");
 
   const [newTask, setNewTask] = useState({
-    id: "",
+    user: email,
     title: "",
     description: "",
     dueDate: "",
@@ -87,8 +99,8 @@ const Todos = () => {
     switch (status) {
       case "todo":
         return "#DA6174";
-      case "doing":
-        return "#728690";
+      // case "doing":
+      //   return "#728690";
       case "done":
         return "#34692F";
       default:
@@ -104,10 +116,31 @@ const Todos = () => {
   const openModal = () => setIsOpen(true);
   const closeModal = () => setIsOpen(false);
 
+  // const handleSave = () => {
+  //   setTasks([...tasks, newTask]);
+  //   setNewTask({ title: "", description: "", dueDate: "" });
+  //   closeModal();
+  // };
+
   const handleSave = () => {
-    setTasks([...tasks, newTask]);
-    setNewTask({ title: "", description: "", dueDate: "" });
-    closeModal();
+    console.log(newTask);
+    fetch("http://localhost:8000/api/tasks/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // include other headers as needed
+      },
+      body: JSON.stringify(newTask),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setTasks([...tasks, data]);
+        setNewTask({ title: "", description: "", dueDate: "", user: email });
+        closeModal();
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
   };
 
   const getCurrentStatusHeading = () => {
@@ -115,8 +148,8 @@ const Todos = () => {
       return "Tasks to do";
     } else if (activeStatusFilter === "done") {
       return "Tasks that are done";
-    } else if (activeStatusFilter === "doing") {
-      return "Tasks in Progress";
+      // } else if (activeStatusFilter === "doing") {
+      //   return "Tasks in Progress";
     } else {
       return "Overview of all tasks";
     }
@@ -134,18 +167,31 @@ const Todos = () => {
     setIsEditModalOpen(true);
   };
   const handleUpdate = () => {
-    setTasks(
-      tasks.map((task) => (task.id === selectedTask.id ? selectedTask : task))
-    );
-    setSelectedTask(null);
-    setIsEditModalOpen(false);
+    fetch(`http://localhost:8000/api/tasks/${selectedTask.id}/`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        // include other headers as needed
+      },
+      body: JSON.stringify(selectedTask),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setTasks(tasks.map((task) => (task.id === data.id ? data : task)));
+        setSelectedTask(null);
+        setIsEditModalOpen(false);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
   };
+
   const getEmptyTasksHeading = (status) => {
     switch (status) {
       case "todo":
         return "No tasks to do yet. Add a new task to get started.";
-      case "doing":
-        return "No tasks in progress yet. Add a new task to get started.";
+      // case "doing":
+      //   return "No tasks in progress yet. Add a new task to get started.";
       case "done":
         return "No tasks are done yet. Add a new task to get started.";
       default:
@@ -301,23 +347,42 @@ const Todos = () => {
                               task.status.slice(1)}
                           </Badge>
                           <Checkbox
-                            isChecked={task.done}
+                            isChecked={task.status === "done"}
                             colorScheme="green"
                             borderRadius="md"
                             border="#1F324E"
                             onChange={(e) => {
-                              const updatedTasks = tasks.map((t) => {
-                                if (t.id === task.id) {
-                                  return {
-                                    ...t,
-                                    status: e.target.checked ? "done" : "todo",
-                                    done: e.target.checked,
-                                  };
-                                } else {
-                                  return t;
+                              const updatedTask = {
+                                ...task,
+                                status: e.target.checked ? "done" : "todo",
+                                done: e.target.checked,
+                              };
+
+                              fetch(
+                                `http://localhost:8000/api/tasks/${task.id}/`,
+                                {
+                                  method: "PUT",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    // include other headers as needed
+                                  },
+                                  body: JSON.stringify(updatedTask),
                                 }
-                              });
-                              setTasks(updatedTasks);
+                              )
+                                .then((response) => response.json())
+                                .then((data) => {
+                                  const updatedTasks = tasks.map((t) => {
+                                    if (t.id === data.id) {
+                                      return data;
+                                    } else {
+                                      return t;
+                                    }
+                                  });
+                                  setTasks(updatedTasks);
+                                })
+                                .catch((error) => {
+                                  console.error("Error:", error);
+                                });
                             }}
                           />
                         </Flex>
@@ -359,22 +424,29 @@ const Todos = () => {
               color="white"
               mt={{ md: 4, base: 16 }}
             >
-              Hello,
+              Dashboard
             </Text>
-            <Text
+            {/* <Text
               fontFamily="comfortaa"
               fontSize={{ md: "4xl", base: "2xl" }}
               color="white"
               mt={-3}
             >
-              {user.name && user.name.split(" ")[0]}
-            </Text>
+              {userName}
+            </Text> */}
           </Flex>
-          <Avatar
+          {/* <Avatar
             name={user.name}
             src={user.avatar}
             size="xl"
             mt={{ md: 4, base: 16 }}
+          /> */}
+          <Image
+            borderRadius="full"
+            boxSize="10"
+            src={pic}
+            alt="Profile picture"
+            mb={{ base: 4, md: 0 }}
           />
         </Flex>
 
@@ -382,7 +454,7 @@ const Todos = () => {
           templateColumns={{ base: "repeat(4, 1fr)", md: "repeat(2, 1fr)" }}
           gap={{ base: 1, md: 2 }}
           mt={{ base: 4, md: 8 }}
-          w={{base:"100%",md:"80%"}}
+          w={{ base: "100%", md: "80%" }}
         >
           <Box
             bg="rgba(255, 255, 255, 0.1)"
@@ -392,7 +464,6 @@ const Todos = () => {
             p={4}
             h={{ base: "80px", md: "150px" }}
             w={{ base: "80px", md: "150px" }}
-
             // minH={{ base: "30px", md: "150px" }}
             // minW={{ base: "80px", md: "150px" }}
             _hover={{ transform: "scale(1.05)" }}
@@ -436,7 +507,6 @@ const Todos = () => {
             borderRadius="xl"
             boxShadow="md"
             p={4}
-          
             h={{ base: "80px", md: "150px" }}
             w={{ base: "80px", md: "150px" }}
             _hover={{ transform: "scale(1.05)" }}
@@ -473,13 +543,12 @@ const Todos = () => {
               {getTaskCount("done")}
             </Text>
           </Box>
-          <Box
+          {/* <Box
             bg="rgba(255, 255, 255, 0.1)"
             backdropFilter="blur(10px)"
             borderRadius="xl"
             boxShadow="md"
             p={4}
-        
             h={{ base: "80px", md: "150px" }}
             w={{ base: "80px", md: "150px" }}
             _hover={{ transform: "scale(1.05)" }}
@@ -515,7 +584,7 @@ const Todos = () => {
             >
               {getTaskCount("doing")}
             </Text>
-          </Box>
+          </Box> */}
           <Box
             bg="rgba(255, 255, 255, 0.1)"
             backdropFilter="blur(10px)"
@@ -628,9 +697,9 @@ const Todos = () => {
                   border="1px solid #CB9379"
                   _hover={{ border: "1px solid #1F324E" }}
                   color="#1F324E"
-                  onChange={(e) =>
-                    setNewTask({ ...newTask, dueDate: e.target.value })
-                  }
+                  onChange={(e) => {
+                    setNewTask({ ...newTask, dueDate: e.target.value });
+                  }}
                 />
               </FormControl>
               <FormControl mt={4}>
@@ -646,7 +715,7 @@ const Todos = () => {
                 >
                   <HStack spacing="12px">
                     <Radio value="todo">Todo</Radio>
-                    <Radio value="doing">Doing</Radio>
+                    {/* <Radio value="doing">Doing</Radio> */}
                     <Radio value="done">Done</Radio>
                   </HStack>
                 </RadioGroup>
@@ -758,7 +827,7 @@ const Todos = () => {
                 >
                   <HStack spacing="24px">
                     <Radio value="todo">To do</Radio>
-                    <Radio value="doing">Doing</Radio>
+                    {/* <Radio value="doing">Doing</Radio> */}
                     <Radio value="done">Done</Radio>
                   </HStack>
                 </RadioGroup>
