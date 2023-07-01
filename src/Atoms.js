@@ -5,3 +5,4 @@ export const userNameAtom = atomWithStorage("");
 export const emailAtom = atomWithStorage("");
 export const picAtom = atomWithStorage("");
 export const loginAtom = atomWithStorage(false);
+export const tokenAtom=atomWithStorage(null);

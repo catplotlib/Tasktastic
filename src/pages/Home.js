@@ -9,10 +9,8 @@ import {
   Image,
   Center,
 } from "@chakra-ui/react";
-// import { Link } from "react-router-dom";
 import { useSpring, animated } from "react-spring";
-// import { auth, googleAuthProvider } from "../firebase/firebaseConfig";
-// import { signInWithPopup } from "firebase/auth";
+
 import { useAtom } from "jotai";
 import {
   userAtom,
@@ -20,15 +18,16 @@ import {
   emailAtom,
   picAtom,
   loginAtom,
+  tokenAtom,
 } from "../Atoms";
 import { useNavigate } from "react-router-dom";
-// import { onAuthStateChanged } from "firebase/auth";
-// import { browserLocalPersistence, setPersistence } from "firebase/auth";
+
 import { useGoogleLogin } from "@react-oauth/google";
 
 const Home = () => {
   const [user, setUser] = useAtom(userAtom);
   const [email, setEmail] = useAtom(emailAtom);
+  const [token, setToken] = useAtom(tokenAtom);
   const [pic, setPic] = useAtom(picAtom);
   const [userName, setUserName] = useAtom(userNameAtom);
   const [loginn, setLogin] = useAtom(loginAtom);
@@ -37,7 +36,7 @@ const Home = () => {
 
   const login = useGoogleLogin({
     onSuccess: (tokenResponse) => {
-      setEmail(tokenResponse.access_token);
+      setToken(tokenResponse.access_token);
       navigate("/todos");
       setLogin(true);
     },

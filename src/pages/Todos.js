@@ -30,16 +30,17 @@ import {
   Textarea,
   Image,
 } from "@chakra-ui/react";
-import { ChevronLeftIcon, ChevronRightIcon, AddIcon } from "@chakra-ui/icons";
+import { AddIcon } from "@chakra-ui/icons";
 import moment from "moment";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAtom } from "jotai";
-import { userNameAtom, emailAtom, picAtom } from "../Atoms";
+import { userNameAtom, emailAtom, picAtom, tokenAtom } from "../Atoms";
 import axios from "axios";
 
 const Todos = () => {
   const [userName, setUserName] = useAtom(userNameAtom);
   const [email, setEmail] = useAtom(emailAtom);
+  const [token, setToken] = useAtom(tokenAtom);
   const [pic, setPic] = useAtom(picAtom);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -56,15 +57,35 @@ const Todos = () => {
 
   useEffect(() => {
     axios
-      .get("https://tasktastic.pythonanywhere.com/api/tasks")
+      .get("https://tasktastic.pythonanywhere.com/api/tasks/")
       .then((res) => {
         const userTasks = res.data.filter((task) => {
-          console.log(task.user);
           return task.user === email;
         });
         setTasks(userTasks);
       })
       .catch((err) => console.log(err));
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      axios
+        .get("https://www.googleapis.com/oauth2/v3/userinfo", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+          setUserName(response.data.picture);
+          setEmail(response.data.email);
+          setPic(response.data.picture);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    };
+
+    fetchData();
   }, []);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -124,17 +145,10 @@ const Todos = () => {
 
   const handleSave = () => {
     console.log(newTask);
-    fetch("https://tasktastic.pythonanywhere.com/api/tasks/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        // include other headers as needed
-      },
-      body: JSON.stringify(newTask),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setTasks([...tasks, data]);
+    axios
+      .post("https://tasktastic.pythonanywhere.com/api/tasks/", newTask)
+      .then((response) => {
+        setTasks([...tasks, response.data]);
         setNewTask({ title: "", description: "", dueDate: "", user: email });
         closeModal();
       })
@@ -167,17 +181,17 @@ const Todos = () => {
     setIsEditModalOpen(true);
   };
   const handleUpdate = () => {
-    fetch(`https://tasktastic.pythonanywhere.com/api/tasks/${selectedTask.id}/`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        // include other headers as needed
-      },
-      body: JSON.stringify(selectedTask),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setTasks(tasks.map((task) => (task.id === data.id ? data : task)));
+    axios
+      .put(
+        `https://tasktastic.pythonanywhere.com/api/tasks/${selectedTask.id}/`,
+        selectedTask
+      )
+      .then((response) => {
+        setTasks(
+          tasks.map((task) =>
+            task.id === response.data.id ? response.data : task
+          )
+        );
         setSelectedTask(null);
         setIsEditModalOpen(false);
       })
@@ -280,6 +294,7 @@ const Todos = () => {
                       zIndex: 1,
                     }}
                     transition="all 0.3s ease-in-out"
+                    onClick={() => openEditModal(task)}
                   >
                     <MotionVStack
                       spacing={4}
@@ -301,7 +316,6 @@ const Todos = () => {
                         fontWeight={700}
                         size={{ base: "md", md: "lg" }}
                         color="#1F324E"
-                        onClick={() => openEditModal(task)}
                       >
                         {task.title}
                       </Heading>
@@ -358,22 +372,21 @@ const Todos = () => {
                                 done: e.target.checked,
                               };
 
-                              fetch(
-                                `https://tasktastic.pythonanywhere.com/api/tasks/${task.id}/`,
-                                {
-                                  method: "PUT",
-                                  headers: {
-                                    "Content-Type": "application/json",
-                                    // include other headers as needed
-                                  },
-                                  body: JSON.stringify(updatedTask),
-                                }
-                              )
-                                .then((response) => response.json())
-                                .then((data) => {
+                              axios
+                                .put(
+                                  `https://tasktastic.pythonanywhere.com/api/tasks/${task.id}/`,
+                                  updatedTask,
+                                  {
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                      // include other headers as needed
+                                    },
+                                  }
+                                )
+                                .then((response) => {
                                   const updatedTasks = tasks.map((t) => {
-                                    if (t.id === data.id) {
-                                      return data;
+                                    if (t.id === response.data.id) {
+                                      return response.data;
                                     } else {
                                       return t;
                                     }
